@@ -365,9 +365,8 @@ Durch JOIN auf die "alkis_elemente" mit einem Teil des Schlüssels wird das zur 
 Es sollte eine Tabellen-Struktur bereit gestellt werden, die auch aussagt, dass der Wert "Offen" zur
 Zusatz-Eigenschaft "Art der Bebauung" gehört. Dazu muss das PostProcessing erweitert werden. */
 
-$sql="SELECT e.definition, trim(both FROM n.nutzsl) AS nutzsl, trim(both FROM n.fl) AS fl, trim(both FROM s.nutzung) AS nutzung
+$sql="SELECT trim(both FROM n.nutzsl) AS nutzsl, trim(both FROM n.fl) AS fl, trim(both FROM s.nutzung) AS nutzung
  FROM nutz_21 n JOIN nutz_shl s ON n.nutzsl = s.nutzshl
- JOIN alkis_elemente e ON e.kennung = substring(n.nutzsl from 1 for 5)
 WHERE n.flsnr = $1 ORDER BY cast(n.fl AS integer) DESC;";
 // Flurstueckskennzeichen mit Trennzeichen im ALB-Format wie 'llgggg-fff-zzzzz/nnn'
 $fskennzalb=$defland.$gmkgnr."-".str_pad($flurnummer,3,"0",STR_PAD_LEFT)."-".str_pad($zaehler,5,"0",STR_PAD_LEFT)."/".str_pad($nenner,3,"0",STR_PAD_LEFT);
@@ -383,8 +382,6 @@ while($row = pg_fetch_assoc($res)) {
 	$flae=$row["fl"]; // Buchfläche
 	$nutzsl=$row["nutzsl"]; // Schlüssel
 	$nutzung=$row["nutzung"]; // Bezeichnung aus ALB-Tabelle, "fein"
-	$defi=$row["definition"]; // Langer Text mit Beschreibung
-	$title=htmlentities($defi, ENT_QUOTES, "UTF-8"); // .. für Anzeige aufbereitet
 	echo "\n<tr>\n\t";
 		if ($j === 0) { // 1
 			echo "<td class='ll' title='Abschnitt der tats&auml;chlichen Nutzung'><img src='ico/Abschnitt.png' width='16' height='16' alt=''> Nutzung:</td>";
@@ -395,7 +392,7 @@ while($row = pg_fetch_assoc($res)) {
 		echo "\n\t<td></td>"
 		."\n\t<td class='fla' title='Buchfl&auml;che des Abschnitts'>".$absflaebuch."</td>" // Sp. wie Fl. in Bodenschätzg.
 		."\n\t<td></td>"
-		."\n\t<td class='lr' title='".$title."'>".DsKy($nutzsl, 'Nutzungsarten-*').$nutzung."</td>"
+		."\n\t<td class='lr' title='Nutzungsart des Abschnitts'>".DsKy($nutzsl, 'Nutzungsarten-*').$nutzung."</td>"
 		."\n\t<td>";
 /*		// Derzeit ist keine Gruppe zugeordnet
 			switch ($grupp) { // Icon nach 4 Objektartengruppen
