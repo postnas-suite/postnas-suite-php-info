@@ -69,7 +69,7 @@ if (!$con) echo "\n<p class='err'>Fehler beim Verbinden der DB</p>";
 // G e b ä u d e
 // ... g.qualitaetsangaben, 
 $sqlg ="SELECT g.gml_id, g.name, g.bauweise, g.gebaeudefunktion, g.anzahlderoberirdischengeschosse AS aog, g.anzahlderunterirdischengeschosse AS aug, 
-g.lagezurerdoberflaeche, g.dachgeschossausbau, g.zustand, array_to_string(g.weiteregebaeudefunktion, ',') AS wgf, g.dachform, g.hochhaus, g.objekthoehe, 
+g.lagezurerdoberflaeche, g.dachgeschossausbau, g.zustand, array_to_string(g.weiteregebaeudefunktion, ',') AS wgf, g.dachform, g.hochhaus, g.hoehe, 
 g.geschossflaeche, g.grundflaeche, g.umbauterraum, g.baujahr, g.dachart, 
 h.beschreibung AS bbauw, h.dokumentation AS dbauw, u.beschreibung AS bfunk, u.dokumentation AS dfunk, z.beschreibung AS zustandv, z.dokumentation AS zustandd, d.beschreibung AS bdach, 
 a.beschreibung AS dgaus, o.beschreibung AS oflv, o.dokumentation AS ofld,
@@ -160,7 +160,7 @@ $wgf=$rowg["wgf"];			// Array-> kommagetr. Liste
 $daf=$rowg["dachform"];		// Key
 $dach=$rowg["bdach"];		// Value
 
-$hho=$rowg["objekthoehe"];
+$hho=trim($rowg["hoehe"], '{}');	// Höhe des Gebäudes; Array, Typ double precision[]
 $gfl=$rowg["geschossflaeche"];
 $grf=$rowg["grundflaeche"];
 $ura=$rowg["umbauterraum"];
