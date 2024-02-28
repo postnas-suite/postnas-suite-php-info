@@ -31,7 +31,7 @@ function werteliste($bez ,$sqlin, $con) {
 // Anwendung: FS-Nachweis Bodenschätzung
 	global $dbg;
 
-	if ($bez === 'e') {$tabelle = 'ax_entstehungsartoderklimastufewasserverhaeltnisse_bodensc';} 
+	if ($bez === 'e') {$tabelle = 'ax_entstehungsart';}
 	elseif ($bez === 's') {$tabelle = 'ax_sonstigeangaben_bodenschaetzung';}
 
 	$sql="SELECT wert, beschreibung FROM ".$tabelle." WHERE wert IN (".$sqlin.") ORDER BY wert LIMIT $1 ;";
@@ -365,9 +365,8 @@ Durch JOIN auf die "alkis_elemente" mit einem Teil des Schlüssels wird das zur 
 Es sollte eine Tabellen-Struktur bereit gestellt werden, die auch aussagt, dass der Wert "Offen" zur
 Zusatz-Eigenschaft "Art der Bebauung" gehört. Dazu muss das PostProcessing erweitert werden. */
 
-$sql="SELECT e.definition, trim(both FROM n.nutzsl) AS nutzsl, trim(both FROM n.fl) AS fl, trim(both FROM s.nutzung) AS nutzung
+$sql="SELECT trim(both FROM n.nutzsl) AS nutzsl, trim(both FROM n.fl) AS fl, trim(both FROM s.nutzung) AS nutzung
  FROM nutz_21 n JOIN nutz_shl s ON n.nutzsl = s.nutzshl
- JOIN alkis_elemente e ON e.kennung = substring(n.nutzsl from 1 for 5)
 WHERE n.flsnr = $1 ORDER BY cast(n.fl AS integer) DESC;";
 // Flurstueckskennzeichen mit Trennzeichen im ALB-Format wie 'llgggg-fff-zzzzz/nnn'
 $fskennzalb=$defland.$gmkgnr."-".str_pad($flurnummer,3,"0",STR_PAD_LEFT)."-".str_pad($zaehler,5,"0",STR_PAD_LEFT)."/".str_pad($nenner,3,"0",STR_PAD_LEFT);
@@ -383,8 +382,6 @@ while($row = pg_fetch_assoc($res)) {
 	$flae=$row["fl"]; // Buchfläche
 	$nutzsl=$row["nutzsl"]; // Schlüssel
 	$nutzung=$row["nutzung"]; // Bezeichnung aus ALB-Tabelle, "fein"
-	$defi=$row["definition"]; // Langer Text mit Beschreibung
-	$title=htmlentities($defi, ENT_QUOTES, "UTF-8"); // .. für Anzeige aufbereitet
 	echo "\n<tr>\n\t";
 		if ($j === 0) { // 1
 			echo "<td class='ll' title='Abschnitt der tats&auml;chlichen Nutzung'><img src='ico/Abschnitt.png' width='16' height='16' alt=''> Nutzung:</td>";
@@ -395,7 +392,7 @@ while($row = pg_fetch_assoc($res)) {
 		echo "\n\t<td></td>"
 		."\n\t<td class='fla' title='Buchfl&auml;che des Abschnitts'>".$absflaebuch."</td>" // Sp. wie Fl. in Bodenschätzg.
 		."\n\t<td></td>"
-		."\n\t<td class='lr' title='".$title."'>".DsKy($nutzsl, 'Nutzungsarten-*').$nutzung."</td>"
+		."\n\t<td class='lr' title='Nutzungsart des Abschnitts'>".DsKy($nutzsl, 'Nutzungsarten-*').$nutzung."</td>"
 		."\n\t<td>";
 /*		// Derzeit ist keine Gruppe zugeordnet
 			switch ($grupp) { // Icon nach 4 Objektartengruppen
@@ -438,16 +435,22 @@ echo "\n<tr>" // Flächen-Summenzeile
 // Tabelle "klas_3x" (norbit-ALB): Dort fehlen Bodenart und Zustandsstufe, es ist aber bereits auf Buchfläche umgerechnet.
 
 // Bodenschätzungs-Abschnitte mit Flurstücken verschneiden, Spalten entschlüsseln
-$sql="SELECT b.kulturart AS kulturartk, kulturart.beschreibung AS kulturartv,
- b.bodenart AS bodenartk, bodenart.beschreibung AS bodenartv, zustbod.beschreibung AS zustbodv,
- b.entstehungsartoderklimastufewasserverhaeltnisse AS entsteh, b.sonstigeangaben,
+$sql="SELECT b.nutzungsart AS nutzungsartk, nutzungsart.beschreibung AS nutzungsartv,
+ b.bodenart AS bodenartk, bodenart.beschreibung AS bodenartv,
+ bodstufe.beschreibung AS bodenstufev, zuststufe.beschreibung AS zuststufev,
+ b.entstehungsart AS entstehk, b.klimastufe AS klimastufek, b.wasserverhaeltnisse AS wasserverhk,
+ klimastufe.beschreibung AS klimastufev, wasserverh.beschreibung AS wasserverhv,
+ b.sonstigeangaben,
  coalesce(b.bodenzahlodergruenlandgrundzahl, '') as bodenzahl, b.ackerzahlodergruenlandzahl AS ackerzahl,
  b.jahreszahl, st_area(st_intersection(b.wkb_geometry, f.wkb_geometry)) AS schnittflae 
 FROM ax_flurstueck f
 JOIN ax_bodenschaetzung b ON st_intersects(b.wkb_geometry, f.wkb_geometry) AND st_area(st_intersection(b.wkb_geometry, f.wkb_geometry)) > 0.05
 LEFT JOIN ax_bodenart_bodenschaetzung bodenart ON b.bodenart = bodenart.wert
-LEFT JOIN ax_kulturart_bodenschaetzung kulturart ON b.kulturart = kulturart.wert
-LEFT JOIN ax_zustandsstufeoderbodenstufe_bodenschaetzung zustbod ON b.zustandsstufeoderbodenstufe = zustbod.wert
+LEFT JOIN ax_nutzungsart_bodenschaetzung nutzungsart ON b.nutzungsart = nutzungsart.wert
+LEFT JOIN ax_bodenstufe bodstufe ON b.bodenstufe = bodstufe.wert
+LEFT JOIN ax_zustandsstufe zuststufe ON b.zustandsstufe = zuststufe.wert
+LEFT JOIN ax_klimastufe klimastufe ON b.klimastufe = klimastufe.wert
+LEFT JOIN ax_wasserverhaeltnisse wasserverh ON b.wasserverhaeltnisse = wasserverh.wert
 WHERE f.gml_id = $1 AND f.endet IS NULL AND b.endet IS NULL ORDER BY schnittflae DESC";
 
 $v = array($gmlid);
@@ -459,9 +462,9 @@ $klasflae = 0; // Summe klassifizierte Fläche
 $j=0;
 if(!empty($res) && pg_num_rows($res) > 0) {
 	while ($row = pg_fetch_assoc($res)) {
-		$kulturartk=$row['kulturartk']; // Key	-
-		$kulturartv=$row['kulturartv']; // - Value		
-		if (substr($kulturartv, 0, 3) === 'Ack') { // A
+		$nutzungsartk = $row['nutzungsartk']; // Key	-
+		$nutzungsartv = $row['nutzungsartv']; // - Value
+		if (substr($nutzungsartv, 0, 3) === 'Ack') { // A
 			$kbez1="Bodenzahl";
 			$kbez2="Ackerzahl";
 		} else { // Gr
@@ -485,7 +488,11 @@ if(!empty($res) && pg_num_rows($res) > 0) {
 		$absbuchflaedis = number_format($absbuchflae,0,",",".")." m&#178;";
 
 		$jahr=$row['jahreszahl'];
-		$entsteh=$row['entsteh'];
+		$entstehk=$row['entstehk'];
+		$klimastufek = $row['klimastufek'];
+		$klimastufev = $row['klimastufev'];
+		$wasserverhk = $row['wasserverhk'];
+		$wasserverhv = $row['wasserverhv'];
 		$sonst=$row['sonstigeangaben'];
 		if ($j === 0) { // 1
 			echo "\n<tr>\n\t<td class='ll' title='Abschnitt Bodensch&auml;tzung'><img src='ico/Landwirt.png' width='16' height='16' alt=''> Bodensch&auml;tzung:</td>";
@@ -496,16 +503,30 @@ if(!empty($res) && pg_num_rows($res) > 0) {
 		."\n\t<td class='re' title='Fl&auml;che des Sch&auml;tzungsabschnitts'>".$absbuchflaedis."</td>"
 		."\n\t<td class='lr'><span title='".$kbez1."'>".$boedenzahl."</span>/<span title='".$kbez2."'>".$ackerzahl."</span></td>"
 		."\n\t<td class='lr'>";
-		echo "\n\t\t".DsKy($kulturartk, 'Kulturart')." <span title='Kulturart-*'>".$kulturartv."</span>";
+		echo "\n\t\t".DsKy($nutzungsartk, 'Nutzungsart')." <span title='Nutzungsart-*'>".$nutzungsartv."</span>";
 		echo "\n\t\t<br>".DsKy($row['bodenartk'], 'Bodenart-*')." <span title='Bodenart'>".$row['bodenartv']."</span>";
-		echo "\n\t\t<br><span title='Zustandsstufe'>".$row['zustbodv']."</span>";
 
-			// 2 ARRAYs auflösen
-			if (isset($entsteh)) {
-				$ent=trim($entsteh, "{}");
-				echo "\n\t\t<br><span title='Enststehungsart oder Klimastufe, Wasserverh&auml;ltnisse'>".DsKy($ent, '*');
+		if (isset($row['bodenstufev'])) {
+			echo "\n\t\t<br><span title='Bodenstufe'>".$row['bodenstufev']."</span>";
+		} else if (isset($row['zuststufev'])) {
+			echo "\n\t\t<br><span title='Zustandsstufe'>".$row['zuststufev']."</span>";
+		}
+
+			// Arrays für 'entstehungsart' und 'sonstigeangaben' auflösen;
+			// 'klimastufe' und 'wasserverhaeltnisse' liegen als einfache Integer vor
+			if (isset($entstehk)) {
+				$ent = trim($entstehk, "{}");
+				echo "\n\t\t<br><span title='Entstehungsart'>" . DsKy($ent, '*');
 				werteliste('e', $ent, $con); // ++ Zeilenweise mit <br> ?
 				echo "</span>";
+			}
+			if (isset($klimastufek) && isset($klimastufev)) {
+				echo "\n\t\t<br><span title='Klimastufe'>" . DsKy($klimastufek, '*');
+				echo $klimastufev . "</span>";
+			}
+			if (isset($wasserverhk) && isset($wasserverhv)) {
+				echo "\n\t\t<br><span title='Wasserverh&auml;ltnisse'>" . DsKy($wasserverhk, '*');
+				echo $wasserverhv . "</span>";
 			}
 			if (isset($sonst)) {
 				$son=trim($sonst, "{}");
