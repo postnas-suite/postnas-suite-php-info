@@ -46,7 +46,7 @@ function lage_zum_fs($gmlid) {
 	global $con;
 	$sql ="SELECT DISTINCT s.bezeichnung, l.hausnummer "
 	."FROM ax_flurstueck f JOIN ax_lagebezeichnungmithausnummer l ON l.gml_id=ANY(f.weistauf) "
-	."JOIN ax_lagebezeichnungkatalogeintrag s ON l.kreis=s.kreis AND l.gemeinde=s.gemeinde AND l.lage=s.lage "
+	."JOIN ax_lagebezeichnungkatalogeintrag s ON l.kreis=s.kreis AND l.gemeinde=s.gemeinde AND l.lage=s.lage AND l.regierungsbezirk = s.regierungsbezirk "
 	."WHERE f.gml_id= $1 AND f.endet IS NULL AND l.endet IS NULL AND s.endet IS NULL ORDER BY s.bezeichnung, l.hausnummer;";
 
 	$v=array($gmlid);
