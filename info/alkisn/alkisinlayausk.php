@@ -154,7 +154,7 @@ pg_free_result($res);
 // Lage  M I T  HausNr (Adresse)
 $sql ="SELECT DISTINCT s.gml_id AS kgml, l.gml_id, s.bezeichnung, l.hausnummer 
 FROM ax_flurstueck f JOIN ax_lagebezeichnungmithausnummer l ON l.gml_id=ANY(f.weistauf)
-JOIN ax_lagebezeichnungkatalogeintrag s ON l.kreis=s.kreis AND l.gemeinde=s.gemeinde AND l.lage=s.lage 
+JOIN ax_lagebezeichnungkatalogeintrag s ON l.kreis=s.kreis AND l.gemeinde=s.gemeinde AND l.lage=s.lage AND l.regierungsbezirk = s.regierungsbezirk 
 WHERE f.gml_id= $1 AND f.endet IS NULL AND l.endet IS NULL AND s.endet IS NULL 
 ORDER BY s.bezeichnung, l.hausnummer;";
 $v=array($gmlid); // id FS
@@ -198,7 +198,7 @@ pg_free_result($res);
 // Lage  O H N E   HausNr
 $sql="SELECT DISTINCT s.gml_id AS kgml, l.gml_id, s.bezeichnung, l.unverschluesselt "
 	."FROM ax_flurstueck f JOIN ax_lagebezeichnungohnehausnummer l ON l.gml_id=ANY(f.zeigtauf) "
-	."LEFT JOIN ax_lagebezeichnungkatalogeintrag s ON l.kreis=s.kreis AND l.gemeinde=s.gemeinde AND l.lage=s.lage "
+	."LEFT JOIN ax_lagebezeichnungkatalogeintrag s ON l.kreis=s.kreis AND l.gemeinde=s.gemeinde AND l.lage=s.lage AND l.regierungsbezirk = s.regierungsbezirk "
 	."WHERE f.gml_id= $1 AND f.endet IS NULL AND l.endet IS NULL AND s.endet IS NULL ORDER BY s.bezeichnung;";
 $v=array($gmlid);
 $res=pg_prepare($con, "", $sql);

@@ -183,7 +183,7 @@ if (($nam != "") OR $allefelder) {
 $sqll ="SELECT 'm' AS ltyp, lh.gml_id AS gmllag, sh.lage, sh.bezeichnung, lh.hausnummer, '' AS laufendenummer, ph.bezeichnung AS gemeinde
 FROM ax_gebaeude gh
 JOIN ax_lagebezeichnungmithausnummer lh ON lh.gml_id=ANY(gh.zeigtauf)
-JOIN ax_lagebezeichnungkatalogeintrag sh ON lh.kreis=sh.kreis AND lh.gemeinde=sh.gemeinde AND lh.lage=sh.lage 
+JOIN ax_lagebezeichnungkatalogeintrag sh ON lh.kreis=sh.kreis AND lh.gemeinde=sh.gemeinde AND lh.lage=sh.lage AND lh.regierungsbezirk = sh.regierungsbezirk 
 LEFT JOIN ax_gemeinde ph ON lh.land=ph.land AND lh.regierungsbezirk=ph.regierungsbezirk AND lh.kreis=ph.kreis AND lh.gemeinde=ph.gemeinde ".UnqKatAmt("lh","ph")
 ."WHERE gh.gml_id= $1 AND gh.endet IS NULL AND lh.endet IS NULL AND sh.endet IS NULL";
 
@@ -192,7 +192,7 @@ $sqll.=" UNION
 SELECT 'p' AS ltyp, ln.gml_id AS gmllag, sn.lage, sn.bezeichnung, ln.pseudonummer AS hausnummer, ln.laufendenummer, pn.bezeichnung AS gemeinde
 FROM ax_gebaeude gn
 JOIN ax_lagebezeichnungmitpseudonummer ln ON ln.gml_id=gn.hat
-JOIN ax_lagebezeichnungkatalogeintrag sn ON ln.kreis=sn.kreis AND ln.gemeinde=sn.gemeinde AND ln.lage=sn.lage 
+JOIN ax_lagebezeichnungkatalogeintrag sn ON ln.kreis=sn.kreis AND ln.gemeinde=sn.gemeinde AND ln.lage=sn.lage AND ln.regierungsbezirk = sn.regierungsbezirk 
 LEFT JOIN ax_gemeinde pn ON ln.land=pn.land AND ln.regierungsbezirk=pn.regierungsbezirk AND ln.kreis=pn.kreis AND ln.gemeinde=pn.gemeinde ".UnqKatAmt("ln","pn")
 ."WHERE gn.gml_id= $1 AND gn.endet IS NULL AND ln.endet IS NULL AND sn.endet IS NULL ";
 

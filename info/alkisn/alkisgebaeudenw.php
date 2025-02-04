@@ -257,13 +257,13 @@ while($rowg = pg_fetch_assoc($resg)) {
 		// HAUPTgebäude  Geb >zeigtAuf> lage (mehrere)
 		$sqll="SELECT 'm' AS ltyp, l.gml_id AS lgml, s.lage, s.bezeichnung, l.hausnummer, '' AS laufendenummer "
 		."FROM ax_gebaeude g JOIN ax_lagebezeichnungmithausnummer l ON l.gml_id=ANY(g.zeigtauf) "
-		."JOIN ax_lagebezeichnungkatalogeintrag s ON l.kreis=s.kreis AND l.gemeinde=s.gemeinde AND l.lage=s.lage "
+		."JOIN ax_lagebezeichnungkatalogeintrag s ON l.kreis=s.kreis AND l.gemeinde=s.gemeinde AND l.lage=s.lage AND l.regierungsbezirk = s.regierungsbezirk "
 		."WHERE g.gml_id= $1 AND g.endet IS NULL AND l.endet IS NULL AND s.endet IS NULL ";
 
 		// UNION - oder NEBENgebäude  Geb >hat> Pseudo
 		$sqll.="UNION SELECT 'p' AS ltyp, l.gml_id AS lgml, s.lage, s.bezeichnung, l.pseudonummer AS hausnummer, l.laufendenummer "
 		."FROM ax_gebaeude g JOIN ax_lagebezeichnungmitpseudonummer l ON l.gml_id=g.hat "
-		."JOIN ax_lagebezeichnungkatalogeintrag s ON l.kreis=s.kreis AND l.gemeinde=s.gemeinde AND l.lage=s.lage "
+		."JOIN ax_lagebezeichnungkatalogeintrag s ON l.kreis=s.kreis AND l.gemeinde=s.gemeinde AND l.lage=s.lage AND l.regierungsbezirk = s.regierungsbezirk "
 		."WHERE g.gml_id= $1 AND g.endet IS NULL AND l.endet IS NULL AND s.endet IS NULL "; // ID des Hauses"
 	
 		$sqll.="ORDER BY bezeichnung, hausnummer, laufendenummer;";
