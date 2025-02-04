@@ -110,9 +110,10 @@ function zusatz_spalte($col, $inhalt) { // Spalten-Name, Value
 	global $dbg;
 	$einh='';
 	switch ($col) {	
-		case 'objekthoehe':
+		case 'hoehe': // Typ 3,4,8,9; entferne Chars '{}' aus dem Wert, da Datenbank-Typ 'double precision[]' (Array)
 			$titel='Objekth&ouml;he';
 			$einh=' m';
+			$inhalt = trim($inhalt, '{}');
 		break;
 		case 'breitedesobjekts':
 			$titel='Breite des Objekts';
@@ -277,7 +278,7 @@ case $btyp_sonst:	// 3 - S o n s t i g e  Bauwerke
 	$sqlk="SELECT b3.funktion, k3.beschreibung, k3.dokumentation, b3.hydrologischesmerkmal, hm.beschreibung AS hmbeschr, hm.dokumentation AS hmdoku"
 	.$FR."LEFT JOIN ax_funktion_bauwerk k3 ON b3.funktion=k3.wert "
 	." LEFT JOIN ax_hydrologischesmerkmal_sonstigesbauwerkodersonstigeeinri hm ON b3.hydrologischesmerkmal=hm.wert".$WH;
-	$sqlz="SELECT b3.bezeichnung, b3.objekthoehe".$FR.$WH;
+	$sqlz="SELECT b3.bezeichnung, b3.hoehe".$FR.$WH;
  	$sqlr="SELECT b3.hatdirektunten, b3.gehoertzu".$FR.$WH;
 break;
 
@@ -288,7 +289,7 @@ case $btyp_indu:	// 4 - Bauwerk oder Anlage für  I n d u s t r i e  und Gewerbe
 	.$FR."LEFT JOIN ax_bauwerksfunktion_bauwerkoderanlagefuerindustrieundgewer k4 ON b4.bauwerksfunktion=k4.wert".$WH;
 	$sqlk="SELECT b4.zustand, k4.beschreibung, k4.dokumentation"
 	.$FR."LEFT JOIN ax_zustand_bauwerkoderanlagefuerindustrieundgewerbe k4 ON b4.zustand=k4.wert".$WH;
-	$sqlz="SELECT b4.bezeichnung, b4.objekthoehe".$FR.$WH;
+	$sqlz="SELECT b4.bezeichnung, b4.hoehe".$FR.$WH;
  	$sqlr="SELECT b4.hatdirektunten".$FR.$WH;
 break;
 
@@ -331,7 +332,7 @@ case $btyp_turm:	// 8 - T u r m  (Sonderfall Array)
 	.$FR."LEFT JOIN ax_bauwerksfunktion_turm k8 ON k8.wert =ANY(b8.bauwerksfunktion)".$WH;
 	$sqlk="SELECT b8.zustand, k8.beschreibung, k8.dokumentation"
 	.$FR."LEFT JOIN ax_zustand_turm k8 ON b8.zustand=k8.wert".$WH;
-	$sqlz="SELECT b8.objekthoehe".$FR.$WH;
+	$sqlz="SELECT b8.hoehe".$FR.$WH;
  	$sqlr="SELECT b8.hatdirektunten, b8.zeigtauf".$FR.$WH;
 break;
 
@@ -344,7 +345,7 @@ case $btyp_vorrat:	// 9 -  V o r r a t s b e h ä l t e r ,  S p e i c h e r b a
 	 b9.speicherinhalt, sp9.beschreibung AS spbes, sp9.dokumentation AS spdok"
 	.$FR."LEFT JOIN ax_lagezurerdoberflaeche_vorratsbehaelterspeicherbauwerk k9 ON b9.lagezurerdoberflaeche=k9.wert 
  LEFT JOIN ax_speicherinhalt_vorratsbehaelterspeicherbauwerk sp9 ON b9.speicherinhalt=sp9.wert".$WH;
-	$sqlz="SELECT b9.objekthoehe".$FR.$WH;
+	$sqlz="SELECT b9.hoehe".$FR.$WH;
  	$sqlr="SELECT b9.hatdirektunten".$FR.$WH;
 break;
 
