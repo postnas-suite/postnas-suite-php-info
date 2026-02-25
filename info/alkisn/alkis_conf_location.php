@@ -10,5 +10,5 @@
 Version:
 	2020-10-13 Syntax ohne Klammern, rename
 */
-	include "/opt/gdi/conf/alkis_conf.php";
+	include "../../conf/alkisn_conf.php";
 ?>
