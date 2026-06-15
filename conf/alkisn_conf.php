@@ -7,6 +7,7 @@
 	2020-12-16 Sonderfall QWC2 API-Gateway-Umleitung bei Selbstverlinkung
 	2021-12-07 Neue Parameter $katAmtMix (Kataster-Amt-Mix) und $fsHistorie
 	2021-12-09 Neuer Parameter $PrntBtn (Drucken-Schaltfläche)
+	2026-06-15 Neue Parameter §mapConfig zur Generierung einer Karte via getMap-Request (siehe auch getMapImage($config) in alkisfkt.php)
 */
 
 //	Default Bundesland-Schlüssel, falls dieser bei Anfragen ausgelassen wird
@@ -90,4 +91,23 @@
 //		log_line_prefix = '%t [%a-%h] %q%u@%d '
 //	wobei %a = Application
 
+
+// Ausgabe einer Karte via Flurstücksauskunft
+// beim Aufruf der Skripte alkisfsnw.php bzw alkisausk.php muss die BBOX komma-separiert übergeben werden
+// der GetMap-Request wird zusammengestellt und an den definierten WMS gesendet (siehe map_url, map_layers)
+// Die Breite (map_image_width) und Höhe (map_image_height) des Kartenbildes kann definiert werden.
+// Außerdem kann ein Buffer (map_buffer) definiert werden, der bei der Anfrage verwendet wird.
+// Soll keine Karte angezeigt werden, kann entweder 'activate_map' in der Konfiguration auf false gesetzt werden
+// oder beim Aufruf der PHP-Skripte &map=false übergeben werden.
+// das Highlighting des betreffenden Flurstücks erfolgt über den Dienst.
+
+    $mapConfig = [
+        'activate_map' => false,  // false default
+        'map_url' => 'https://www.wms.nrw.de/geobasis/wms_nw_alkis?',
+        'map_layers' => 'adv_alkis_flurstuecke', // oder kommasepariert: 'flurstuecke,gebäude';
+        'map_epsg' => 'EPSG:25832',
+        'map_image_width' => 700,
+        'map_image_height' => 500,
+        'map_buffer' => 100,
+    ];
 ?>

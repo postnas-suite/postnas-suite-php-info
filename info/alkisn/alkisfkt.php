@@ -18,6 +18,7 @@
 	2021-12-30 Bestandsnachweis recursiv über alle Buchungs-Ebenen
 	2022-01-13 Functions in Fach-Modul verschoben, wenn nur von einem verwendet. Neue Functions LnkStf(), DsKy()
 	2022-07-05 PHP 8.1: Connection verwenden bei "pg_prepare" und "pg_execute", keine NULL-Werte in String-Functions verwenden
+        2026-06-15 Funktion getMapImage($config) generiert einen getMap-Request
 */
 
 function selbstverlinkung() {
@@ -658,5 +659,56 @@ function fskenn_dbformat($fskennz) {
 		$fskzdb=$land.$zgemkg.$zflur.$zzaehler.$znenner.'__'; // FS-Kennz. Format Datenbank
 	}
 	return $fskzdb;
+}
+
+function getMapImage($config) {
+    $bbox = $config['bbox'];
+    if (!empty($config['map_buffer'])) {
+        $buf = floatval($config['map_buffer']);
+        list($xmin,$ymin,$xmax,$ymax) =
+            array_map('floatval', explode(',', $bbox));
+        $xmin -= $buf;
+        $ymin -= $buf;
+        $xmax += $buf;
+        $ymax += $buf;
+        $img_ratio =
+            $config['map_image_width']
+            / $config['map_image_height'];
+        $bbox_width  = $xmax - $xmin;
+        $bbox_height = $ymax - $ymin;
+        $bbox_ratio = $bbox_width / $bbox_height;
+        if ($bbox_ratio > $img_ratio) {
+
+  // Karte zu breit → Höhe erweitern 
+            $target_height = $bbox_width / $img_ratio;
+            $delta =
+                ($target_height - $bbox_height) / 2;
+            $ymin -= $delta;
+            $ymax += $delta;
+        } else {
+  // Karte zu hoch → Breite erweitern 
+            $target_width =
+                $bbox_height * $img_ratio;
+            $delta =
+                ($target_width - $bbox_width) / 2;
+            $xmin -= $delta;
+            $xmax += $delta;
+        }
+        $bbox =
+            "$xmin,$ymin,$xmax,$ymax";
+    }
+    return
+        $config['map_url']
+        . 'SERVICE=WMS'
+        . '&VERSION=1.3.0'
+        . '&REQUEST=GetMap'
+        . '&BBOX=' . $bbox
+        . '&LAYERS=' . $config['map_layers']
+        . '&WIDTH=' . $config['map_image_width']
+        . '&HEIGHT=' . $config['map_image_height']
+        . '&CRS=' . $config['map_epsg']
+        . '&FORMAT=image/png'
+        . '&STYLES='
+        . '&gml_id=' . $config['gml_id'];
 }
 ?>

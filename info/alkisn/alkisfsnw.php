@@ -16,6 +16,7 @@
 	2021-12-09 Neue Parameter: $katAmtMix (Kataster-Amt-Mix), $PrntBtn (Drucken-Schaltfläche)
 	2022-01-13 Functions in Fach-Modul verschoben, die nicht von mehreren verwendet werden. Neue Functions LnkStf(), DsKy()
 	2022-07-05 PHP 8.1: Connection verwenden bei "pg_prepare" und "pg_execute", keine NULL-Werte in String-Functions verwenden
+	2026-06-15 Generierung einer Karte via getMap-Request (siehe auch getMapImage($config) in alkisfkt.php und neuem Parameter §mapConfig in der alkisn_config.php)  
 
 ToDo:
 	- Tabbelle "nutz_21" ist ein Relikt von NorGIS/ALB und könnte in späteren Versionen fehlen.
@@ -671,6 +672,15 @@ if ($gml_buchungsstelle === '') {
 }
 
 pg_close($con);
+
+// Karte zum FS
+if ((!isset($map) || $map !== 'false') && $mapConfig['activate_map'] !== false) {
+    $mapConfig['bbox'] = $bbox;
+    $mapConfig['gml_id'] = $gmlid;
+    $image = getMapImage($mapConfig);
+    echo "\n<hr>\n<div><img src='" . $image . "' /></div>\n";
+}
+
 echo "<div class='buttonbereich noprint'>\n<hr>"
 	."\n\t<a title='zur&uuml;ck' href='javascript:history.back()'><img src='ico/zurueck.png' width='16' height='16' alt='zur&uuml;ck'></a>&nbsp;";
 if ($PrntBtn==true){echo "\n\t<a title='Drucken' href='javascript:window.print()'><img src='ico/print.png' width='16' height='16' alt='Drucken'></a>&nbsp;";}
