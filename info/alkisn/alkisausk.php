@@ -17,6 +17,7 @@
 	2020-12-15 Input-Validation und Strict Comparisation (===)
 	2022-01-13 Neue Functions LnkStf(), DsKy()
 	2022-07-05 PHP 8.1: Connection verwenden bei "pg_prepare" und "pg_execute", keine NULL-Werte in String-Functions verwenden
+	2026-06-15 Generierung einer Karte via getMap-Request (siehe auch getMapImage($config) in alkisfkt.php und neuem Parameter §mapConfig in der alkisn_config.php)    
 
 H i n w e i s :  Dies Modul wird beim Entwickler nicht mehr produktiv eingesetzt.
 		Statt dessen wird "alkisinlayausk.php" verwendet um von einer WMS-FeatureInfo in ein Fenster überzuleiten.
@@ -116,7 +117,7 @@ echo "\n<table class='outer'>\n<tr>\n<td>"
 ."\n\t<p class='nwlink'>weitere Auskunft:<br>";
 
 // Flurstücksnachweis (o. Eigent.)
-echo "\n\t<a href='alkisfsnw.php?gkz=".$gkz."&amp;gmlid=".$gmlid."&amp;eig=n".LnkStf()
+echo "\n\t<a href='alkisfsnw.php?gkz=".$gkz."&amp;gmlid=".$gmlid."&amp;bbox=".$bbox."&amp;eig=n".LnkStf()
 	."' title='Flurst&uuml;cksnachweis, alle Flurst&uuml;cksdaten'>Flurst&uuml;ck "
 	."<img src='ico/Flurstueck_Link.png' width='16' height='16' alt=''>"
 ."</a><br>";
@@ -245,8 +246,17 @@ while($rowg = pg_fetch_array($resg)) {
 	$j++;
 }
 if ($j === 0) {echo "\n<p class='err'>Keine Buchungen gefunden.</p>";}
-echo "\n<hr>";
 
+
+// Karte zum FS
+if ((!isset($map) || $map !== 'false') && $mapConfig['activate_map'] !== false) {
+    $mapConfig['bbox'] = $bbox;
+    $mapConfig['gml_id'] = $gmlid;
+    $image = getMapImage($mapConfig);
+    echo "\n<hr>\n<div><img src='" . $image . "' /></div>\n";
+}
+
+echo "\n<hr>";
 footer($gmlid, selbstverlinkung()."?", "");
 
 ?>
